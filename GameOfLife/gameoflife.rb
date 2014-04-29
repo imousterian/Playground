@@ -11,8 +11,6 @@ class CellMatrix
         prgn = Random.new
         # @grids = Array.new (@@gridlength) { |i| Array.new(@@gridlength) { |i| prgn.rand(1.0) <= 0.3 ? 1 : 0 }}
 
-
-
         @grids = Array.new (@@gridlength) { |i| Array.new(@@gridlength) { |j| 0 }}
         @grids[5][4] =1
         @grids[5][5] =1
@@ -71,6 +69,10 @@ class CellMatrix
 
     end
 
+    def checkBoundaries(row,col)
+        return (row >= 0 && row <= (@@gridlength - 1) && (col >= 0 && col <= @@gridlength - 1))
+    end
+
     def determineLiveNeighbors(xi, yi, b)
         results = 0
 
@@ -79,7 +81,8 @@ class CellMatrix
                 # puts "Checking s: #{el1} and #{el2}"
                 if ((el1 != xi) || (el2 != yi))
 
-                    if (el1 >= 0 && el1 <= @@gridlength - 1) && (el2 >= 0 && el2 <= @@gridlength - 1)
+                    # if (el1 >= 0 && el1 <= @@gridlength - 1) && (el2 >= 0 && el2 <= @@gridlength - 1)
+                    if checkBoundaries(el1,el2)
                         results += b[el1][el2]#@grids[el1][el2]
                     end
                 end
