@@ -1,89 +1,83 @@
+# implementation of Conway's game of life version 1
 
-class CellMatrix
+class CellGrid
 
-    @grids#  @something = instance variable; $something = global variable (made global from inside the class or method); @@something = class variable
+    @grids
     @@gridlength = 11
 
     def initialize()
     end
 
-    def assignRandomLife()
-        prgn = Random.new
-        # @grids = Array.new (@@gridlength) { |i| Array.new(@@gridlength) { |i| prgn.rand(1.0) <= 0.3 ? 1 : 0 }}
+    def initiateGrid()
+        # initiate a random distribution of live cells
+        # randEl = Random.new
+        # @grids = Array.new (@@gridlength) { |i| Array.new(@@gridlength) { |i| randEl.rand(1.0) <= 0.3 ? 1 : 0 }}
 
+        # OR: to test, begin a specific starting point
         @grids = Array.new (@@gridlength) { |i| Array.new(@@gridlength) { |j| 0 }}
+
         @grids[5][4] =1
         @grids[5][5] =1
         @grids[5][6] =1
-
         @grids[4][5] =1
         @grids[6][5] =1
 
-
     end
 
-    def printgrids()
+    def runSimulation(oldGrid)
 
-        # newGrid = Array.new (4) { |i| Array.new(4){ |i| 0 }}
-        count = 0
+        # create a new grid
+        newGrid = Array.new (@@gridlength) { |i| Array.new(@@gridlength) { |j| 0 }}
 
-        # runLife()
-        while count < 10
-            puts "count #{count}"
-            @grids = runLife(@grids)
-
-            count += 1
-
-        end
-
-    end
-
-    def runLife(grid)
-        newgrid = Array.new (@@gridlength) { |i| Array.new(@@gridlength) { |j| 0 }}
-        grid.each_with_index do |x, xi|
+        oldGrid.each_with_index do |x, xi|
 
             print x
             print "\n"
 
             x.each_with_index do |y, yi|
 
-                newgrid[xi][yi] = grid[xi][yi]
+                newGrid[xi][yi] = oldGrid[xi][yi]
 
-                s = determineLiveNeighbors(xi,yi,grid)
+                neighborCount = calculateLiveNeighbors(xi,yi,oldGrid)
 
-                if (grid[xi][yi] == 0 && s == 3)
-                    newgrid[xi][yi] = 1
+                if !cellAlive?(xi,yi) && neighborCount == 3 # rule # 1; the cell is born
+                    newGrid[xi][yi] = 1
 
-                elsif (grid[xi][yi] == 1 && (s >= 2 && s <= 3))
-                    newgrid[xi][yi] == 1
+                elsif cellAlive?(xi,yi)
 
-                elsif (grid[xi][yi] == 1 && ( s <= 2 || s > 3))
-                    newgrid[xi][yi] = 0
+                    if neighborCount >= 2 && neighborCount <= 3   # rule # 2; keep reproducing
+                        newGrid[xi][yi] = 1
+                    elsif neighborCount <= 2 || neighborCount > 3 # rule # 3; the cell dies
+                        newGrid[xi][yi] = 0
+                    end
 
                 end
 
             end
         end
 
-        return newgrid
-
+        return newGrid
     end
 
-    def checkBoundaries(row,col)
+    def cellAlive?(row,col)
+        return @grids[row][col] == 1 ? true : false
+    end
+
+    def boundariesSafe?(row,col)
         return (row >= 0 && row <= (@@gridlength - 1) && (col >= 0 && col <= @@gridlength - 1))
     end
 
-    def determineLiveNeighbors(xi, yi, b)
+    def calculateLiveNeighbors(xi, yi, arr)
         results = 0
 
-        (xi-1).upto(xi+1) do |el1|
-            (yi-1).upto(yi+1) do |el2|
-                # puts "Checking s: #{el1} and #{el2}"
-                if ((el1 != xi) || (el2 != yi))
+        # check neghbors at indices row+1 to row-1, col+1 to col-1
+        (xi-1).upto(xi+1) do |row|
+            (yi-1).upto(yi+1) do |col|
+                if ((row != xi) || (col != yi))
 
-                    # if (el1 >= 0 && el1 <= @@gridlength - 1) && (el2 >= 0 && el2 <= @@gridlength - 1)
-                    if checkBoundaries(el1,el2)
-                        results += b[el1][el2]#@grids[el1][el2]
+                    # check the boundaries; if boundaries are at a negative index, ignore; else calculate sum
+                    if boundariesSafe?(row,col)
+                        results += arr[row][col]
                     end
                 end
             end
@@ -91,16 +85,25 @@ class CellMatrix
         return results
     end
 
+    def runDisplayResults()
+
+        # run simulation that many times
+        count = 0
+
+        while count < 10
+
+            puts "iteration # #{count}"
+            @grids = runSimulation(@grids)
+
+            count += 1
+        end
+    end
+
 end
 
-a = CellMatrix.new()
-a.assignRandomLife()
-a.printgrids()
-
-
-
-
-
+a = CellGrid.new()
+a.initiateGrid()
+a.runDisplayResults()
 
 
 
